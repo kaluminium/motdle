@@ -6,7 +6,9 @@
       "esModuleInterop": true,
       "skipLibCheck": true,
       "outDir": "./dist",
-      "types": ["node", "dotenv"]
+      "types": ["node", "dotenv"],
+      "skipDefaultLibCheck": true,
+      "resolveJsonModule": true,
     },
     "include": ["src/**/*"]
   }
