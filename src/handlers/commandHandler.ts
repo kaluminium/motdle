@@ -23,6 +23,9 @@ module.exports = async (client: Client) => {
             if ('data' in command && 'execute' in command) {
               commands.set(command.data.name, command);
               client.slashCommands.set(command.data.name, command)
+              if('authorisation' in command){
+                client.autorisations.set(command.data.name, command.authorisation)
+              }
             } else {
               console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
             }

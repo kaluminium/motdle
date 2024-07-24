@@ -15,7 +15,7 @@ const client : Client = new Client({
 });
 
 client.slashCommands = new Collection<string, SlashCommand>();
-
+client.autorisations = new Collection<string, string>()
 const handlersDirs = join(__dirname, './handlers');
 
 readdirSync(handlersDirs).forEach(file => {

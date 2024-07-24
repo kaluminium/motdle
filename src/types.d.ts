@@ -10,7 +10,8 @@ declare global {
 
 declare module 'discord.js' {
     export interface Client {
-        slashCommands: Collection<string, SlashCommand>
+        slashCommands: Collection<string, SlashCommand>,
+        autorisations : Collection<string, string>
     }
 }
 
