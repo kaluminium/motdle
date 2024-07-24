@@ -1,4 +1,4 @@
-import {Collection, CommandInteraction, SlashCommandBuilder} from "discord.js";
+import {ActivityType, Collection, CommandInteraction, PresenceStatusData, SlashCommandBuilder} from "discord.js";
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
@@ -29,4 +29,10 @@ export interface SlashCommand {
     execute: (interaction: CommandInteraction) => Promise<any>;
     autocomplete?: (interaction: any) => Promise<any>;
 }
+
+export interface BotPresence {
+    name : string,
+    type : ActivityType
+}
+
 export {};
