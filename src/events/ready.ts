@@ -23,7 +23,7 @@ const event: BotEvent = {
                 presenceName, {type : presence.type});
 
             i = (i + 1) % presences.length; 
-        }, 5000);
+        }, 20000);
     }
 };
 
