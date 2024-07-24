@@ -1,6 +1,7 @@
 import { Client, GatewayIntentBits, Message } from 'discord.js';
 import dotenv from 'dotenv';
-const emojis = require("../emojis.json")
+import {readdirSync} from "fs";
+import {join} from "path";
 
 dotenv.config();
 const TOKEN : string | undefined = process.env.DISCORD_TOKEN;
@@ -12,15 +13,10 @@ const client : Client = new Client({
   ],
 });
 
-client.once('ready', () => {
-  console.log(`Connected as ${client.user?.tag}`);
-});
+const handlersDirs = join(__dirname, './handlers');
 
-client.on("messageCreate", (message : Message) => {
-  if(message.author.bot) return;
-  let test = emojis[message.cleanContent.toUpperCase()] ? emojis[message.cleanContent.toUpperCase()] : ""
-  if(test === "") return
-  message.channel.send("<:" + message.cleanContent.toUpperCase()+ "_grey:" + test.grey + "> <:" + message.cleanContent.toUpperCase() + "_yellow:" + test.yellow + "> <:" + message.cleanContent.toUpperCase() +  "_green:" + test.green + ">")
+readdirSync(handlersDirs).forEach(file => {
+  require(`${handlersDirs}/${file}`)(client);
 })
 
 client.login(TOKEN).catch(console.error);
