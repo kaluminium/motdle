@@ -14,7 +14,11 @@
     "@types/ws": "^8.5.11",
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
+    "node-schedule": "^2.1.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
+  },
+  "devDependencies": {
+    "@types/node-schedule": "^2.1.7"
   }
 }
