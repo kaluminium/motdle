@@ -10,12 +10,16 @@ export class WordService {
   private constructor(){
     this.loadWords()
     this.selectRandomWord()
-    this.selectNewRandomWord()
+    this.scheduleWordSelection()
   }
 
   private loadWords() : void {
-    const data: string = fs.readFileSync(path.resolve(__dirname, "../data/en-words.json"), 'utf-8');
-    this.words = JSON.parse(data);
+    try{
+      const data: string = fs.readFileSync(path.resolve(__dirname, "../data/en-words.json"), 'utf-8');
+      this.words = JSON.parse(data);
+    } catch(e){
+      console.error('Error loading words : ', e)
+    }
   }
 
   private selectRandomWord(): void {
@@ -25,7 +29,7 @@ export class WordService {
     }
   }
 
-  private selectNewRandomWord(): void{
+  private scheduleWordSelection(): void{
     schedule.scheduleJob('0 0 * * *', async () => {
       this.selectRandomWord();
     });
