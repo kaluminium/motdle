@@ -1,5 +1,6 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, SlashCommandBuilder , MessageComponentInteraction} from "discord.js";
 import { SlashCommand } from "../../types.d";
+import { WordService } from "../../services/wordService";
 
 export const command : SlashCommand = {
     data: new SlashCommandBuilder()
@@ -7,7 +8,8 @@ export const command : SlashCommand = {
     .setDescription('Vraiment pour faire des tests quoi'),
     authorisation : "developper",
     execute : async (interaction : CommandInteraction) => {
-        let word : string = "salut"
+        const wordService : WordService = WordService.getInstance()
+        let word : string = wordService.getWord()
         let tries : number = 6
         let letters : string[] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
@@ -15,7 +17,7 @@ export const command : SlashCommand = {
         .setColor(0x0000ff)
         .setTitle('New Game !')
         .setDescription("Here the word to find : \n"+
-            ":black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square:")
+            word)
         .addFields(
             {name : 'Difficulty : ', value : '5 letters', inline : true},
             {name : 'Tries : ', value : '0/6', inline : true},

@@ -3,8 +3,7 @@ import dotenv from 'dotenv';
 import {readdirSync} from "fs";
 import {join} from "path";
 import {SlashCommand} from "./types.d";
-import { loadWords, selectRandomWord} from './services/wordService';
-import schedule from 'node-schedule'
+import { WordService } from './services/wordService';
 
 dotenv.config();
 const TOKEN : string | undefined = process.env.DISCORD_TOKEN;
@@ -24,10 +23,6 @@ readdirSync(handlersDirs).forEach(file => {
   require(`${handlersDirs}/${file}`)(client);
 })
 
-loadWords();
-selectRandomWord();
-schedule.scheduleJob('0 0 * * *', async () => {
-  selectRandomWord();
-});
+let wordService : WordService = WordService.getInstance()
 
 client.login(TOKEN).catch(console.error);
