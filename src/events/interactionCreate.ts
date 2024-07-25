@@ -1,6 +1,6 @@
 import { Client, CommandInteraction, Events, Interaction, Message } from "discord.js";
 import {BotEvent} from "../types";
-const config = require("../../config.json")
+const config = require("../config.json")
 
 const event: BotEvent = {
     name: Events.InteractionCreate,

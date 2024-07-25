@@ -1,6 +1,6 @@
 import { Client, Events, Message } from "discord.js";
 import {BotEvent} from "../types";
-const emojis = require("../../emojis.json")
+const emojis = require("../data/emojis.json")
 
 const event: BotEvent = {
     name: Events.MessageCreate,

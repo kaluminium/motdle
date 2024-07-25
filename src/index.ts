@@ -26,7 +26,7 @@ readdirSync(handlersDirs).forEach(file => {
 
 loadWords();
 selectRandomWord();
-schedule.scheduleJob('0 0 * * *', () => {
+schedule.scheduleJob('0 0 * * *', async () => {
   selectRandomWord();
 });
 
