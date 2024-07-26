@@ -58,10 +58,11 @@ export const command : SlashCommand = {
 
         collector.on('collect', async (i) => {
             if(i.member?.user.id !== interaction.member?.user.id) return;
+            if(i.customId !== "play") return
             await i.showModal(modal)
             
-            const submitted = await interaction.awaitModalSubmit({time: 300000, filter : myfilter}).catch(() => {return null});
-            if(submitted){
+            const submitted = await i.awaitModalSubmit({time: 300000, filter : myfilter}).catch(() => {return null});
+            if(submitted && submitted?.isModalSubmit()){
                 let inputWord = submitted.fields.getTextInputValue("wordInput").toUpperCase()
                 await submitted.reply("-------")
                 game.addToHistory(inputWord)
