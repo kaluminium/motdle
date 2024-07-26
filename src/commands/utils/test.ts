@@ -1,4 +1,4 @@
-import {ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, SlashCommandBuilder , MessageComponentInteraction} from "discord.js";
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, SlashCommandBuilder , MessageComponentInteraction, ModalBuilder, TextInputBuilder, TextInputStyle, ModalActionRowComponentBuilder, ModalSubmitInteraction} from "discord.js";
 import { SlashCommand } from "../../types.d";
 import { WordService } from "../../services/wordService";
 
@@ -19,7 +19,7 @@ export const command : SlashCommand = {
         .setDescription("Here the word to find : \n"+
             word)
         .addFields(
-            {name : 'Difficulty : ', value : '5 letters', inline : true},
+            {name : 'Difficulty : ', value : `${word.length} letters`, inline : true},
             {name : 'Tries : ', value : '0/6', inline : true},
             {name : 'Letters : ', value : letters.join(", ")}
         )
@@ -34,14 +34,40 @@ export const command : SlashCommand = {
         const row : ActionRowBuilder<any> = new ActionRowBuilder<any>()
         .addComponents(playButton)
 
+        const modal : ModalBuilder = new ModalBuilder()
+        .setCustomId("motdleGame")
+        .setTitle("Find the word")
+
+        const wordInput : TextInputBuilder = new TextInputBuilder()
+        .setCustomId("wordInput")
+        .setStyle(TextInputStyle.Short)
+        .setLabel("Word : ")
+        .setMaxLength(word.length)
+        .setMinLength(word.length)
+
+        const wordInputActionRow : ActionRowBuilder<ModalActionRowComponentBuilder> = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(wordInput)
+
+        modal.addComponents(wordInputActionRow)
+
         const response = await interaction.reply({embeds : [embedMessage], components : [row]})
 
-        const collector = response.createMessageComponentCollector({time: 60000});
+        let collector = response.createMessageComponentCollector({time: 600000});
+
+        const myfilter = (i : ModalSubmitInteraction) => i.customId === 'motdleGame' && i.user.id === interaction.user.id;
 
         collector.on('collect', async (i) => {
             if(i.member?.user.id !== interaction.member?.user.id) return;
             i.channel?.send("vié")
-            collector.stop()
+            await i.showModal(modal)
+            
+            const submitted = await interaction.awaitModalSubmit({time: 300000, filter : myfilter}).catch(() => {return null});
+            if(submitted){
+                let inputWord = submitted.fields.getTextInputValue("wordInput")
+                submitted.reply(inputWord)
+                tries--
+            }
+
+            if(tries < 1) collector.stop()
         })
 
         collector.on('end', async (i: MessageComponentInteraction, reason) => {
@@ -49,6 +75,7 @@ export const command : SlashCommand = {
                 await response.delete();
                 collector.stop();
             }
+            response.edit({content : "en vrai t'es un peu nul mdr"})
         })
     }
 }
