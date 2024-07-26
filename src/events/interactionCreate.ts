@@ -12,6 +12,9 @@ const event: BotEvent = {
             if (authorisation == "developper"){
                 if(!verifyDevelopper(interaction)) return interaction.reply("toi tu essaies de tricher");
             }
+            if (authorisation == "beta"){
+                if(!verifyDevelopper(interaction) && !verifyBeta(interaction)) return interaction.reply("toi tu essaies de tricher");
+            }
             if (!command) return;
             try{
                 await command.execute(interaction);
@@ -24,6 +27,13 @@ const event: BotEvent = {
 
 function verifyDevelopper(interaction : Interaction){
     for(let id of config.developpers){
+        if(interaction.member?.user.id == id) return true
+    }
+    return false
+}
+
+function verifyBeta(interaction : Interaction){
+    for(let id of config.beta){
         if(interaction.member?.user.id == id) return true
     }
     return false

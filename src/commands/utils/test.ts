@@ -8,7 +8,7 @@ export const command : SlashCommand = {
     data: new SlashCommandBuilder()
     .setName('test')
     .setDescription('Vraiment pour faire des tests quoi'),
-    authorisation : "developper",
+    authorisation : "beta",
     execute : async (interaction : CommandInteraction) => {
         const wordService : WordService = WordService.getInstance()
         let word : string = wordService.getWord().toUpperCase()
