@@ -8,6 +8,7 @@ export class MotdleGame{
     private startingTime : number
     private discordId : string
     private serverId : string | null
+    private letters : string[]
 
     public constructor(wordToFind : string, discordId : string, serverId : string | null, maxTries : number){
         this.wordToFind = wordToFind
@@ -17,6 +18,7 @@ export class MotdleGame{
         this.maxTries = maxTries
         this.tries = 0
         this.history = []
+        this.letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
     }
 
     private getLettersDetails() : {[key : string] : number} {
@@ -28,7 +30,7 @@ export class MotdleGame{
         return details
     }
 
-    public getLetters(word : string) : string{
+    public getLettersEmojis(word : string) : string{
         let details : {[key : string] : number} = this.getLettersDetails()
         let letters : string[] = new Array<string>(this.wordToFind.length)
         let i : number = 0
@@ -63,7 +65,7 @@ export class MotdleGame{
 
     public getHistoryLetters() : string[]{
         let history : string[] = []
-        for(let word of this.history) history.push(this.getLetters(word))
+        for(let word of this.history) history.push(this.getLettersEmojis(word))
         return history
     }
 
@@ -78,6 +80,18 @@ export class MotdleGame{
 
     public getTries() : number{
         return this.tries
+    }
+
+    private removeUsedLetters(word : string) : string[] {
+        for(let letter of word){
+            let index : number = this.letters.indexOf(letter)
+            if(index != -1) this.letters.splice(index, 1)
+        }
+        return this.letters
+    }
+
+    public getUnusedLetters() : string[]{
+        return this.letters
     }
 
     public win(){

@@ -12,18 +12,17 @@ export const command : SlashCommand = {
     execute : async (interaction : CommandInteraction) => {
         const wordService : WordService = WordService.getInstance()
         let word : string = wordService.getWord().toUpperCase()
-        let letters : string[] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
         let game : MotdleGame = new MotdleGame(word, interaction.user.id, interaction.guildId, 5)
 
         const embedMessage : EmbedBuilder= new EmbedBuilder()
         .setColor(0x0000ff)
         .setTitle('New Game !')
         .setDescription("Here the word to find : \n"+
-            word)
+            ":grey_question:".repeat(word.length))
         .addFields(
             {name : 'Difficulty : ', value : `${word.length} letters`, inline : true},
             {name : 'Tries : ', value : `${game.getTries()}/${game.getMaxTries()}`, inline : true},
-            {name : 'Letters : ', value : letters.join(", ")}
+            {name : 'Letters : ', value : game.getUnusedLetters().join(", ")}
         )
         .setFooter({text : 'Motdle'})
         .setTimestamp()
