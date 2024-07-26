@@ -1,6 +1,8 @@
-import {ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, SlashCommandBuilder , MessageComponentInteraction, ModalBuilder, TextInputBuilder, TextInputStyle, ModalActionRowComponentBuilder, ModalSubmitInteraction} from "discord.js";
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, SlashCommandBuilder , MessageComponentInteraction, ModalBuilder, TextInputBuilder, TextInputStyle, ModalActionRowComponentBuilder, ModalSubmitInteraction, InteractionResponse} from "discord.js";
 import { SlashCommand } from "../../types.d";
 import { WordService } from "../../services/wordService";
+import { MotdleGame } from "../../core/motdleGame";
+const emojis = require("../../data/emojis.json")
 
 export const command : SlashCommand = {
     data: new SlashCommandBuilder()
@@ -9,9 +11,9 @@ export const command : SlashCommand = {
     authorisation : "developper",
     execute : async (interaction : CommandInteraction) => {
         const wordService : WordService = WordService.getInstance()
-        let word : string = wordService.getWord()
-        let tries : number = 6
+        let word : string = wordService.getWord().toUpperCase()
         let letters : string[] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+        let game : MotdleGame = new MotdleGame(word, interaction.user.id, interaction.guildId, 5)
 
         const embedMessage : EmbedBuilder= new EmbedBuilder()
         .setColor(0x0000ff)
@@ -20,7 +22,7 @@ export const command : SlashCommand = {
             word)
         .addFields(
             {name : 'Difficulty : ', value : `${word.length} letters`, inline : true},
-            {name : 'Tries : ', value : '0/6', inline : true},
+            {name : 'Tries : ', value : `${game.getTries()}/${game.getMaxTries()}`, inline : true},
             {name : 'Letters : ', value : letters.join(", ")}
         )
         .setFooter({text : 'Motdle'})
@@ -57,25 +59,27 @@ export const command : SlashCommand = {
 
         collector.on('collect', async (i) => {
             if(i.member?.user.id !== interaction.member?.user.id) return;
-            i.channel?.send("vié")
             await i.showModal(modal)
             
             const submitted = await interaction.awaitModalSubmit({time: 300000, filter : myfilter}).catch(() => {return null});
             if(submitted){
-                let inputWord = submitted.fields.getTextInputValue("wordInput")
-                submitted.reply(inputWord)
-                tries--
+                let inputWord = submitted.fields.getTextInputValue("wordInput").toUpperCase()
+                await submitted.reply("-------")
+                game.addToHistory(inputWord)
+                for(let word of game.getHistoryLetters()) await i.channel?.send(word)
+                if(inputWord == word){
+                    collector.stop()
+                }            
             }
-
-            if(tries < 1) collector.stop()
         })
 
         collector.on('end', async (i: MessageComponentInteraction, reason) => {
             if(reason === 'time'){
                 await response.delete();
                 collector.stop();
+            }else{
+                response.edit({content : "en vrai t'es un peu nul mdr"})
             }
-            response.edit({content : "en vrai t'es un peu nul mdr"})
         })
     }
 }
