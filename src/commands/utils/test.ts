@@ -1,7 +1,7 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, SlashCommandBuilder , MessageComponentInteraction, ModalBuilder, TextInputBuilder, TextInputStyle, ModalActionRowComponentBuilder, ModalSubmitInteraction, InteractionResponse} from "discord.js";
 import { SlashCommand } from "../../types.d";
 import { WordService } from "../../services/wordService";
-import { MotdleGame } from "../../core/motdleGame";
+import { GameReturn, MotdleGame } from "../../core/motdleGame";
 const emojis = require("../../data/emojis.json")
 
 export const command : SlashCommand = {
@@ -13,19 +13,9 @@ export const command : SlashCommand = {
         const wordService : WordService = WordService.getInstance()
         let word : string = wordService.getWord().toUpperCase()
         let game : MotdleGame = new MotdleGame(word, interaction.user.id, interaction.guildId, 5)
+        let responses : InteractionResponse[] = []
 
-        const embedMessage : EmbedBuilder= new EmbedBuilder()
-        .setColor(0x0000ff)
-        .setTitle('New Game !')
-        .setDescription("Here the word to find : \n"+
-            ":grey_question:".repeat(word.length))
-        .addFields(
-            {name : 'Difficulty : ', value : `${word.length} letters`, inline : true},
-            {name : 'Tries : ', value : `${game.getTries()}/${game.getMaxTries()}`, inline : true},
-            {name : 'Letters : ', value : game.getUnusedLetters().join(", ")}
-        )
-        .setFooter({text : 'Motdle'})
-        .setTimestamp()
+        const embedMessage : EmbedBuilder= getEmbed(word, game)
 
         const playButton : ButtonBuilder = new ButtonBuilder()
         .setCustomId('play')
@@ -50,7 +40,8 @@ export const command : SlashCommand = {
 
         modal.addComponents(wordInputActionRow)
 
-        const response = await interaction.reply({embeds : [embedMessage], components : [row]})
+        const response = await interaction.reply({embeds : [embedMessage], components : [row], ephemeral : true})
+        responses.push(response)
 
         let collector = response.createMessageComponentCollector({time: 600000});
 
@@ -58,15 +49,15 @@ export const command : SlashCommand = {
 
         let activeSubmitToken : any = null;
 
+
         collector.on('collect', async (i) => {
             if (i.member?.user.id !== interaction.member?.user.id) return;
             if (i.customId !== "play") return;
             await i.showModal(modal);
-
             const currentSubmitToken = Symbol();
             activeSubmitToken = currentSubmitToken;
 
-            const timeout = 30000;
+            const timeout = 300000;
 
             const modalSubmitPromise = i.awaitModalSubmit({ filter: myfilter, time: timeout })
                 .then(submitted => {
@@ -75,31 +66,30 @@ export const command : SlashCommand = {
                     }
                     return submitted;
                 })
-                .catch(error => {
-                    if (error.code !== 'INTERACTION_COLLECTOR_ERROR') {
-                        console.error('Error awaiting modal submission:', error);
-                    }
-                    return null;
-                });
+                .catch(error => {return null;});
 
             const submitted = await modalSubmitPromise;
 
             if (!submitted) {
-                if (activeSubmitToken === currentSubmitToken) {
-                    console.log('Modal submission timed out or was overridden.');
-                }
                 return;
             }
 
             if (submitted.isModalSubmit()) {
                 let inputWord = submitted.fields.getTextInputValue("wordInput").toUpperCase();
-                await submitted.reply("-------");
-                game.addToHistory(inputWord);
-                for (let word of game.getHistoryLetters()) {
-                    await i.channel?.send(word);
+                let gameReturn : GameReturn = game.addWord(inputWord)
+                if(gameReturn.code < 0){
+                    i.channel?.send(gameReturn.message)
+                    return
                 }
-                if (inputWord === word) {
-                    collector.stop();
+                responses.push(await submitted.reply({embeds : [getEmbed(word, game)], components : [row], ephemeral : true}))
+                if(gameReturn.code > 0){
+                    i.channel?.send(gameReturn.message)
+                    collector.stop()
+                    playButton.setDisabled()
+                    for(let rep of responses){
+                        rep.edit({components : [row]})
+                    }
+                    return
                 }
             }
         });
@@ -114,4 +104,21 @@ export const command : SlashCommand = {
             }
         })
     }
+}
+
+function getEmbed(word : string, game : MotdleGame) : EmbedBuilder{
+    const embed = new EmbedBuilder()
+        .setColor(0x0000ff)
+        .setTitle('New Game !')
+        .addFields(
+            {name : 'Difficulty : ', value : `${word.length} letters`, inline : true},
+            {name : 'Tries : ', value : `${game.getTries()}/${game.getMaxTries()}`, inline : true},
+            {name : 'Letters : ', value : game.getUnusedLetters().join(", ")}
+        )
+        .setFooter({text : 'Motdle'})
+        .setTimestamp()
+
+        if(game.getHistoryLetters().length < 1) embed.setDescription("Here the word to find : \n" + ":grey_question:".repeat(word.length))
+        else embed.setDescription("History : \n" + game.getHistoryLetters().join("\n"))
+    return embed
 }

@@ -1,4 +1,12 @@
 const emojis = require("../data/emojis.json")
+const data = require("../data/en-words.json")
+
+export type GameReturn = {
+    code : number,
+    message : string,
+    history : string[],
+    unusedLetters : string[]
+}
 
 export class MotdleGame{
     private wordToFind : string
@@ -30,7 +38,7 @@ export class MotdleGame{
         return details
     }
 
-    public getLettersEmojis(word : string) : string{
+    private getLettersEmojis(word : string) : string{
         let details : {[key : string] : number} = this.getLettersDetails()
         let letters : string[] = new Array<string>(this.wordToFind.length)
         let i : number = 0
@@ -69,7 +77,7 @@ export class MotdleGame{
         return history
     }
 
-    public addToHistory(word : string) : string[]{
+    private addToHistory(word : string) : string[]{
         this.history.push(word)
         return this.history
     }
@@ -94,11 +102,61 @@ export class MotdleGame{
         return this.letters
     }
 
-    public win(){
+    private win(){
 
     }
 
-    public lose(){
+    private lose(){
 
+    }
+
+    public addWord(word : string) : GameReturn{
+        let gameReturn : GameReturn = {
+            code: 1,
+            message : "win",
+            history : [],
+            unusedLetters : []
+        }
+        if(!MotdleGame.isWordAlpha(word)){
+            gameReturn.code = -1
+            gameReturn.message = "you didn't put only letters"
+            return gameReturn
+        }
+        if(!data.includes(word.toLowerCase())){
+            gameReturn.code = -1
+            gameReturn.message = "you didn't put a real word"
+            return gameReturn
+        }
+        this.tries++
+        this.removeUsedLetters(word)
+        this.addToHistory(word)
+        gameReturn.unusedLetters = this.getUnusedLetters()
+        gameReturn.history = this.getHistoryLetters()
+        if(word === this.wordToFind){
+            this.win()
+            return gameReturn
+        }
+        if(this.tries === this.maxTries){
+            gameReturn.code = 2
+            gameReturn.message = "lose"
+            this.lose()
+            return gameReturn
+        }
+        gameReturn.code = 0
+        gameReturn.message = "in-game"
+        return gameReturn
+    }
+
+    public static isLetterAlpha(letter : string){
+        if(letter.length > 1) return false
+        if(!letter.match(/[a-z]/i)) return false
+        return true
+    }
+
+    public static isWordAlpha(word : string){
+        for(let letter of word){
+            if(!this.isLetterAlpha(letter)) return false
+        }
+        return true
     }
 }
