@@ -111,6 +111,7 @@ function getEmbed(word : string, game : MotdleGame) : EmbedBuilder{
         .setColor(0x0000ff)
         .setTitle('New Game !')
         .addFields(
+            {name : 'Start : ', value : `<t:${Math.floor(game.getStartingTime() / 1000)}:R>`, inline: true},
             {name : 'Difficulty : ', value : `${word.length} letters`, inline : true},
             {name : 'Tries : ', value : `${game.getTries()}/${game.getMaxTries()}`, inline : true},
             {name : 'Letters : ', value : game.getUnusedLetters().join(", ")}

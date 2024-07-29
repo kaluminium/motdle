@@ -29,6 +29,55 @@ export class MotdleGame{
         this.letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
     }
 
+    public addWord(word : string) : GameReturn{
+        let gameReturn : GameReturn = {
+            code: 1,
+            message : "win",
+            history : [],
+            unusedLetters : []
+        }
+        if(!MotdleGame.isWordAlpha(word)){
+            gameReturn.code = -1
+            gameReturn.message = "you didn't put only letters"
+            return gameReturn
+        }
+        if(!data.includes(word.toLowerCase())){
+            gameReturn.code = -1
+            gameReturn.message = "you didn't put a real word"
+            return gameReturn
+        }
+        this.tries++
+        this.removeUsedLetters(word)
+        this.addToHistory(word)
+        gameReturn.unusedLetters = this.getUnusedLetters()
+        gameReturn.history = this.getHistoryLetters()
+        if(word === this.wordToFind){
+            this.win()
+            return gameReturn
+        }
+        if(this.tries === this.maxTries){
+            gameReturn.code = 2
+            gameReturn.message = "lose"
+            this.lose()
+            return gameReturn
+        }
+        gameReturn.code = 0
+        gameReturn.message = "in-game"
+        return gameReturn
+    }
+
+    public static isLetterAlpha(letter : string){
+        if(letter.length > 1) return false
+        if(!letter.match(/[a-z]/i)) return false
+        return true
+    }
+
+    public static isWordAlpha(word : string){
+        for(let letter of word){
+            if(!this.isLetterAlpha(letter)) return false
+        }
+        return true
+    }
     private getLettersDetails() : {[key : string] : number} {
         let details : {[key : string] : number} = {}
         for(let letter of this.wordToFind){
@@ -90,6 +139,10 @@ export class MotdleGame{
         return this.tries
     }
 
+    public getStartingTime() : number{
+        return this.startingTime
+    }
+
     private removeUsedLetters(word : string) : string[] {
         for(let letter of word){
             let index : number = this.letters.indexOf(letter)
@@ -108,55 +161,5 @@ export class MotdleGame{
 
     private lose(){
 
-    }
-
-    public addWord(word : string) : GameReturn{
-        let gameReturn : GameReturn = {
-            code: 1,
-            message : "win",
-            history : [],
-            unusedLetters : []
-        }
-        if(!MotdleGame.isWordAlpha(word)){
-            gameReturn.code = -1
-            gameReturn.message = "you didn't put only letters"
-            return gameReturn
-        }
-        if(!data.includes(word.toLowerCase())){
-            gameReturn.code = -1
-            gameReturn.message = "you didn't put a real word"
-            return gameReturn
-        }
-        this.tries++
-        this.removeUsedLetters(word)
-        this.addToHistory(word)
-        gameReturn.unusedLetters = this.getUnusedLetters()
-        gameReturn.history = this.getHistoryLetters()
-        if(word === this.wordToFind){
-            this.win()
-            return gameReturn
-        }
-        if(this.tries === this.maxTries){
-            gameReturn.code = 2
-            gameReturn.message = "lose"
-            this.lose()
-            return gameReturn
-        }
-        gameReturn.code = 0
-        gameReturn.message = "in-game"
-        return gameReturn
-    }
-
-    public static isLetterAlpha(letter : string){
-        if(letter.length > 1) return false
-        if(!letter.match(/[a-z]/i)) return false
-        return true
-    }
-
-    public static isWordAlpha(word : string){
-        for(let letter of word){
-            if(!this.isLetterAlpha(letter)) return false
-        }
-        return true
     }
 }
