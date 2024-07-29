@@ -56,22 +56,54 @@ export const command : SlashCommand = {
 
         const myfilter = (i : ModalSubmitInteraction) => i.customId === 'motdleGame' && i.user.id === interaction.user.id;
 
+        let activeSubmitToken : any = null;
+
         collector.on('collect', async (i) => {
-            if(i.member?.user.id !== interaction.member?.user.id) return;
-            if(i.customId !== "play") return
-            await i.showModal(modal)
-            
-            const submitted = await i.awaitModalSubmit({time: 300000, filter : myfilter}).catch(() => {return null});
-            if(submitted && submitted?.isModalSubmit()){
-                let inputWord = submitted.fields.getTextInputValue("wordInput").toUpperCase()
-                await submitted.reply("-------")
-                game.addToHistory(inputWord)
-                for(let word of game.getHistoryLetters()) await i.channel?.send(word)
-                if(inputWord == word){
-                    collector.stop()
-                }            
+            if (i.member?.user.id !== interaction.member?.user.id) return;
+            if (i.customId !== "play") return;
+            await i.showModal(modal);
+
+            const currentSubmitToken = Symbol();
+            activeSubmitToken = currentSubmitToken;
+
+            const timeout = 30000;
+
+            const modalSubmitPromise = i.awaitModalSubmit({ filter: myfilter, time: timeout })
+                .then(submitted => {
+                    if (activeSubmitToken !== currentSubmitToken) {
+                        return null;
+                    }
+                    return submitted;
+                })
+                .catch(error => {
+                    if (error.code !== 'INTERACTION_COLLECTOR_ERROR') {
+                        console.error('Error awaiting modal submission:', error);
+                    }
+                    return null;
+                });
+
+            const submitted = await modalSubmitPromise;
+
+            if (!submitted) {
+                if (activeSubmitToken === currentSubmitToken) {
+                    console.log('Modal submission timed out or was overridden.');
+                }
+                return;
             }
-        })
+
+            if (submitted.isModalSubmit()) {
+                let inputWord = submitted.fields.getTextInputValue("wordInput").toUpperCase();
+                await submitted.reply("-------");
+                game.addToHistory(inputWord);
+                for (let word of game.getHistoryLetters()) {
+                    await i.channel?.send(word);
+                }
+                if (inputWord === word) {
+                    collector.stop();
+                }
+            }
+        });
+
 
         collector.on('end', async (i: MessageComponentInteraction, reason) => {
             if(reason === 'time'){
