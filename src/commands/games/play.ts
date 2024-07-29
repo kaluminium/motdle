@@ -11,7 +11,7 @@ export const command : SlashCommand = {
     execute : async (interaction : CommandInteraction) => {
         const wordService : WordService = WordService.getInstance()
         let word : string = wordService.getWord().toUpperCase()
-        let game : MotdleGame = new MotdleGame(word, interaction.user.id, interaction.guildId, 5)
+        let game : MotdleGame = new MotdleGame(word, interaction.user.id, interaction.guildId, 6)
         let responses : InteractionResponse[] = []
 
         const embedMessage : EmbedBuilder= getEmbed(word, game)
@@ -42,7 +42,7 @@ export const command : SlashCommand = {
         const response = await interaction.reply({embeds : [embedMessage], components : [row], ephemeral : true})
         responses.push(response)
 
-        let collector = response.createMessageComponentCollector({time: 600000});
+        let collector = response.createMessageComponentCollector({time: 1200000});
 
         const myfilter = (i : ModalSubmitInteraction) => i.customId === 'motdleGame' && i.user.id === interaction.user.id;
 
@@ -77,7 +77,7 @@ export const command : SlashCommand = {
                 let inputWord = submitted.fields.getTextInputValue("wordInput").toUpperCase();
                 let gameReturn : GameReturn = game.addWord(inputWord)
                 if(gameReturn.code < 0){
-                    i.channel?.send(gameReturn.message)
+                    submitted.reply({content : gameReturn.message, ephemeral : true})
                     return
                 }
                 responses.push(await submitted.reply({embeds : [getEmbed(word, game)], components : [row], ephemeral : true}))
