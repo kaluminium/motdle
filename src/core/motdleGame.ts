@@ -27,6 +27,8 @@ export class MotdleGame{
         this.tries = 0
         this.history = []
         this.letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+
+        console.log(`${discordId} started a game`)
     }
 
     public addWord(word : string) : GameReturn{
@@ -156,10 +158,10 @@ export class MotdleGame{
     }
 
     private win(){
-
+        console.log(`${this.discordId} won`)
     }
 
     private lose(){
-
+        console.log(`${this.discordId} lost`)
     }
 }

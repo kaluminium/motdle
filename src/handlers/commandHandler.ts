@@ -44,7 +44,7 @@ module.exports = async (client: Client) => {
         try {
             console.log('Started refreshing application (/) commands.');
     
-            await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
+            await rest.put(Routes.applicationCommands(clientId), {
             body: Array.from(commands.values()).map(cmd => cmd.data.toJSON()),
             });
     
